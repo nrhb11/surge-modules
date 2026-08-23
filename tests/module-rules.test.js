@@ -1,4 +1,10 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+
+const moduleText = fs.readFileSync(new URL('../YouTube-Premium-Like.sgmodule', `file://${__dirname}/`), 'utf8');
+assert.equal(moduleText.includes('youtube.music.page ='), false);
+assert.equal(moduleText.includes('youtube.music.api ='), true);
+assert.equal(moduleText.includes('youtube-premium-like.js?v=20260823.6'), true);
 
 const ctier = /(^https?:\/\/[\w-]+\.googlevideo\.com\/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+)/;
 const playback = 'https://rr1---sn-test.googlevideo.com/initplayback?id=1&ctier=L&foo=2,ctier,tail';

@@ -49,7 +49,8 @@ const page = run(
   }
 );
 assert.match(page.body, /surge-premium-like-js/);
-assert.match(page.body, /surge-premium-label/);
+assert.match(page.body, /surge-premium-brand/);
+assert.match(page.body, /surge-premium-play/);
 assert.match(page.body, /var ytInitialData = \{"ok":true\};/);
 assert.equal(page.headers['Content-Security-Policy'], undefined);
 assert.equal(page.headers['Content-Security-Policy-Report-Only'], undefined);
