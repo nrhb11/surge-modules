@@ -10,6 +10,10 @@ vm.runInNewContext(source, {
 });
 
 assert.match(result.headers['User-Agent'], /Chrome\/140\.0\.0\.0/);
+assert.match(result.headers['Sec-CH-UA'], /Google Chrome/);
+assert.equal(result.headers['Sec-CH-UA-Mobile'], '?0');
+assert.equal(result.headers['Sec-CH-UA-Platform'], '"macOS"');
+assert.equal(result.headers['Sec-CH-UA-Full-Version'], '"140.0.0.0"');
 assert.equal(result.headers.Cookie, 'unchanged');
 assert.equal('user-agent' in result.headers, false);
 console.log('music request compatibility tests passed');
