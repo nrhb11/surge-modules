@@ -24,7 +24,7 @@ assert.equal(moduleText.includes('\\"captionLang\\":\\"off\\"'), true);
 const mobileRule = moduleText.split('\n').find((line) => line.startsWith('youtube.mobile.response ='));
 assert.equal(mobileRule.includes('|player|'), true);
 assert.equal(mobileRule.includes('|get_watch|'), true);
-assert.equal(mobileRule.includes('youtube-mobile-response.js?v=20260824.4'), true);
+assert.equal(mobileRule.includes('youtube-mobile-response.js?v=20260824.5'), true);
 
 const ctier = /(^https?:\/\/[\w-]+\.googlevideo\.com\/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+)/;
 const playback = 'https://rr1---sn-test.googlevideo.com/initplayback?id=1&ctier=L&foo=2,ctier,tail';
