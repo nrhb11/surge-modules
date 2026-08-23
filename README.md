@@ -5,7 +5,7 @@
 - macOS 的 YouTube 网页版：清理接口广告字段及首页内嵌的首屏广告数据；不注入页面脚本、样式或 Premium 外观，保证登录、菜单与播放来源完整。
 - YouTube Music 网页版：保持 Safari 原生页面与请求头，只清理首页、搜索、队列和播放器接口中的广告；不修改 Music HTML 页面。
 - iPhone / iPad 的 YouTube 与 YouTube Music App：清理 protobuf 响应广告字段，并写入画中画、后台播放能力字段。
-- iPhone/iPad 由独立的移动端响应处理器清理广告并写入相关播放能力字段。
+- iPhone/iPad 使用移动端响应处理器，并保留已验证有效的 `ctier/oad` 视频广告兜底；普通 `videoplayback` 正片明确排除。
 - 保留观看历史、续播和正常播放统计。
 - 不拦截 `googlevideo.com` 正片分片，不使用第三方 Cloudflare Worker。
 
@@ -38,7 +38,7 @@ https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/YouTube
 
 ## 旧规则的取舍
 
-模块不再改写或 MITM `googlevideo.com` 媒体链路，避免拖慢视频、干扰字幕和正片播放。移动端去广告只处理 `youtubei.googleapis.com` 的应用响应；也没有加入会把加密初始化数据转发到第三方 Worker 的脚本。
+移动端保留已验证有效的 `ctier=L` 与 `oad` 兜底，但 `oad` 明确排除 `videoplayback` 正片入口。网页播放器统计和字幕接口保持原生，不再阻断；也没有加入会把加密初始化数据转发到第三方 Worker 的脚本。
 
 ## 限制
 
