@@ -3,8 +3,9 @@
 一个由自己的 GitHub 仓库完整托管的 Surge 模块，覆盖：
 
 - macOS 的 YouTube 网页版：清理首页、搜索页、播放页广告数据与广告空壳。
+- YouTube Music 网页版：清理首页、搜索、队列和播放器广告及 Premium 推广。
 - 网页界面：隐藏 Premium 推销入口，显示 Premium 风格标识，增加 PiP 按钮。
-- iPhone / iPad 的 YouTube App：清理 protobuf 响应广告字段，并写入画中画、后台播放能力字段。
+- iPhone / iPad 的 YouTube 与 YouTube Music App：清理 protobuf 响应广告字段，并写入画中画、后台播放能力字段。
 - 保留观看历史、续播和正常播放统计。
 - 不拦截 `googlevideo.com` 正片分片，不使用第三方 Cloudflare Worker。
 
