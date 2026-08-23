@@ -3,6 +3,9 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(new URL('../youtube-premium-like.js', `file://${__dirname}/`), 'utf8');
+assert.equal(source.includes('window.fetch ='), false);
+assert.equal(source.includes("trap('ytInitialData')"), false);
+assert.equal(source.includes('ytd-popup-container:has(a[href="/premium"])'), false);
 
 function run(url, body, headers = {}) {
   let result;

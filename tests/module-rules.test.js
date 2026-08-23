@@ -4,7 +4,10 @@ const fs = require('node:fs');
 const moduleText = fs.readFileSync(new URL('../YouTube-Premium-Like.sgmodule', `file://${__dirname}/`), 'utf8');
 assert.equal(moduleText.includes('youtube.music.page ='), false);
 assert.equal(moduleText.includes('youtube.music.api ='), true);
-assert.equal(moduleText.includes('youtube-premium-like.js?v=20260823.6'), true);
+assert.equal(moduleText.includes('youtube.music.compat = type=http-request'), true);
+assert.equal(moduleText.includes('youtube-music-request.js?v=20260823.1'), true);
+assert.equal(moduleText.includes('youtube-premium-like.js?v=20260823.7'), true);
+assert.equal(moduleText.includes('(browse|next|search|player|guide|get_watch)'), false);
 
 const ctier = /(^https?:\/\/[\w-]+\.googlevideo\.com\/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+)/;
 const playback = 'https://rr1---sn-test.googlevideo.com/initplayback?id=1&ctier=L&foo=2,ctier,tail';

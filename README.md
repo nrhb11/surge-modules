@@ -3,7 +3,7 @@
 一个由自己的 GitHub 仓库完整托管的 Surge 模块，覆盖：
 
 - macOS 的 YouTube 网页版：清理首页、搜索页、播放页广告数据与广告空壳。
-- YouTube Music 网页版：只清理接口中的首页、搜索、队列和播放器广告，不修改 Music HTML 页面。
+- YouTube Music 网页版：修正 Google 对新版 Safari 的错误降级判断，并清理首页、搜索、队列和播放器接口中的广告；不修改 Music HTML 页面。
 - 网页界面：隐藏 Premium 推销入口，显示 Premium 风格标识，增加 PiP 按钮。
 - iPhone / iPad 的 YouTube 与 YouTube Music App：清理 protobuf 响应广告字段，并写入画中画、后台播放能力字段。
 - 对仍使用 `ctier/oad` 播放链路的 iPhone/iPad 版本，增加视频 CDN 广告兜底；明确排除常规 `videoplayback` 正片入口。
@@ -37,9 +37,9 @@ https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/YouTube
 
 这不等于“永远不用维护”：YouTube 如果修改接口字段、protobuf 结构或反代理策略，任何去广告脚本都可能需要更新。仓库独立解决的是第三方源失效，不是 YouTube 协议永久不变。
 
-## 为什么没有照搬旧规则
+## 旧规则的取舍
 
-未加入 `ctier=L` 和 `oad` 的 `googlevideo.com` 重写。实际抓包显示普通预览与正常视频请求也可能带 `ctier=L`；粗暴重写会造成卡顿、黑屏或清晰度异常。也未加入会把加密初始化数据转发到第三方 Worker 的脚本。
+移动端保留了已验证可用的 `ctier=L` 与 `oad` 兜底，但 `oad` 明确排除 `videoplayback` 正片入口。模块不拦截普通正片分片，也没有加入会把加密初始化数据转发到第三方 Worker 的脚本。
 
 ## 限制
 
@@ -53,6 +53,7 @@ https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/YouTube
 
 - `YouTube-Premium-Like.sgmodule`：Mac + iPhone/iPad 通用入口。
 - `youtube-premium-like.js`：自有网页响应清理与页面增强脚本。
+- `youtube-music-request.js`：YouTube Music 的 Safari 请求头兼容脚本；只替换 User-Agent，保留 Cookie 与其他请求头。
 - `vendor/youtube-mobile-response.js`：仓库内置的移动端 protobuf 响应处理器。
 - `NOTICE`、`vendor/LICENSE-APACHE-2.0`：第三方代码来源与许可证。
 

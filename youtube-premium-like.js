@@ -120,7 +120,6 @@ ytmusic-player-queue-item[is-ad], ytmusic-player-queue-item[ad-playing],
 ytd-banner-promo-renderer, ytd-companion-slot-renderer,
 ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"],
 yt-mealbar-promo-renderer, ytd-feed-nudge-renderer,
-ytd-popup-container:has(a[href="/premium"]),
 ytd-guide-entry-renderer:has(a[href^="/premium"]),
 ytd-guide-entry-renderer:has(a[href*="youtube.com/premium"]),
 ytmusic-guide-entry-renderer:has(a[href*="premium"]),
@@ -175,77 +174,6 @@ const PAGE_SCRIPT = `
   'use strict';
   if (window.__surgePremiumLikeLoaded) return;
   window.__surgePremiumLikeLoaded = true;
-
-  var AD_KEYS = new Set(${JSON.stringify(Array.from(REMOVE_KEYS))});
-  var HIDE_SHORTS = ${HIDE_SHORTS ? 'true' : 'false'};
-  var SHORTS_KEYS = new Set(${JSON.stringify(Array.from(SHORTS_KEYS))});
-
-  function cleanValue(node, seen, depth) {
-    if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return node;
-    seen.add(node);
-    if (Array.isArray(node)) {
-      for (var i = node.length - 1; i >= 0; i--) {
-        var item = node[i];
-        if (item && typeof item === 'object') {
-          var keys = Object.keys(item);
-          if (keys.some(function(k){ return AD_KEYS.has(k) || (HIDE_SHORTS && SHORTS_KEYS.has(k)); })) {
-            node.splice(i, 1);
-          } else cleanValue(item, seen, depth + 1);
-        }
-      }
-      return node;
-    }
-    Object.keys(node).forEach(function (key) {
-      if (AD_KEYS.has(key) || (HIDE_SHORTS && SHORTS_KEYS.has(key))) delete node[key];
-      else cleanValue(node[key], seen, depth + 1);
-    });
-    return node;
-  }
-
-  function cleanObject(value) {
-    try { return cleanValue(value, new WeakSet(), 0); } catch (_) { return value; }
-  }
-
-  function trap(name) {
-    try {
-      var value = cleanObject(window[name]);
-      Object.defineProperty(window, name, {
-        configurable: true,
-        enumerable: true,
-        get: function(){ return value; },
-        set: function(next){ value = cleanObject(next); }
-      });
-    } catch (_) {}
-  }
-
-  trap('ytInitialPlayerResponse');
-  trap('ytInitialData');
-
-  var nativeFetch = window.fetch;
-  if (nativeFetch) {
-    window.fetch = function(input, init) {
-      var promise = nativeFetch.apply(this, arguments);
-      try {
-        var url = typeof input === 'string' ? input : (input && input.url) || '';
-        if (url.indexOf('/youtubei/v1/') === -1) return promise;
-        return promise.then(function(response) {
-          return response.clone().text().then(function(text) {
-            try {
-              var value = cleanObject(JSON.parse(text));
-              var headers = new Headers(response.headers);
-              headers.delete('content-length');
-              headers.delete('content-encoding');
-              return new Response(JSON.stringify(value), {
-                status: response.status,
-                statusText: response.statusText,
-                headers: headers
-              });
-            } catch (_) { return response; }
-          });
-        });
-      } catch (_) { return promise; }
-    };
-  }
 
   function player() {
     return document.getElementById('movie_player') || document.querySelector('.html5-video-player');
@@ -510,8 +438,6 @@ const PAGE_SCRIPT = `
   }
 
   function sync() {
-    cleanObject(window.ytInitialData);
-    cleanObject(window.ytInitialPlayerResponse);
     setPremiumLogo();
     removeAdShells();
     compactGrid();
