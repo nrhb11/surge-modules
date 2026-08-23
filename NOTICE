@@ -8,7 +8,9 @@ This product includes a vendored response-processing file derived from:
 
 Vendored file:
   vendor/youtube-mobile-response.js
-  SHA-256: f98483d5f5017514f82502253c0db5ce2d4ffb7839887aa2cadc22666f5a7f12
+  Local modification: player/get_watch retain ad removal plus PiP/background
+  capability fields; caption-track mutation is disabled.
+  SHA-256: db908a7d8621cc07e25206252349b67e350f46c18963abe26782c202b8ad48e3
 
 The vendored file is hosted by this repository at runtime. It does not call
 the optional init-stream.maasea.workers.dev service used by a separate request
