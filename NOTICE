@@ -1,0 +1,15 @@
+YouTube Premium-like Universal
+
+This product includes a vendored response-processing file derived from:
+  Maasea/sgmodule, Script/Youtube/youtube.response.js
+  Source revision: 65075cdb388fc5e3094afd7e7314c67b243f3525
+  Source: https://github.com/Maasea/sgmodule
+  License: Apache License 2.0
+
+Vendored file:
+  vendor/youtube-mobile-response.js
+  SHA-256: f98483d5f5017514f82502253c0db5ce2d4ffb7839887aa2cadc22666f5a7f12
+
+The vendored file is hosted by this repository at runtime. It does not call
+the optional init-stream.maasea.workers.dev service used by a separate request
+script, and that request script is not included in this project.

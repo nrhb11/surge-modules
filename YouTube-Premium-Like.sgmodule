@@ -1,6 +1,5 @@
-#!name=YouTube Premium-like
-#!desc=Surge Mac 网页版：去广告、隐藏 Premium 推销、Premium 风格标识、画中画按钮。不会解锁服务器端会员权益。
-#!system=mac
+#!name=YouTube Premium-like Universal
+#!desc=Mac 网页 + iPhone/iPad App：清理广告、网页空位、Premium 风格标识、画中画与后台播放字段。所有运行脚本均托管在本仓库。
 #!arguments=hideShorts:false,debug:false
 #!arguments-desc=hideShorts：是否隐藏 Shorts；debug：是否输出调试日志。
 
@@ -14,19 +13,20 @@ DOMAIN,youtube-ads.l.google.com,REJECT-TINYGIF,pre-matching,extended-matching
 
 [URL Rewrite]
 ^https?:\/\/(www\.|m\.)?youtube\.com\/youtubei\/v1\/player\/ad_break _ reject
-^https?:\/\/(www\.|m\.)?youtube\.com\/api\/stats\/ads _ reject
+^https?:\/\/(www\.|m\.|s\.)?youtube\.com\/api\/stats\/ads _ reject
 ^https?:\/\/(www\.|m\.)?youtube\.com\/pcs\/activeview _ reject
 ^https?:\/\/(www\.|m\.)?youtube\.com\/pagead\/ _ reject
 ^https?:\/\/(www\.|m\.)?youtube\.com\/ptracking _ reject
 ^https?:\/\/(www\.|m\.)?youtube\.com\/get_midroll_ _ reject
+^https?:\/\/s\.youtube\.com\/api\/stats\/qoe\?adcontext _ reject
 
 [Script]
-youtube.premium.api = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/youtubei\/v1\/(browse|next|search|player|guide|get_watch)(\?.*)?$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}"
-youtube.premium.googleapis = type=http-response,pattern=^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|search|player|guide|get_watch)(\?.*)?$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}"
-youtube.premium.home = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/(\?.*)?$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}"
-youtube.premium.watch = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/watch\?.*$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}"
-youtube.premium.results = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/results\?.*$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}"
-youtube.premium.shorts = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/shorts\/.*$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}"
+youtube.web.api = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/youtubei\/v1\/(browse|next|search|player|guide|get_watch)(\?.*)?$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js?v=20260823.2,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}",script-update-interval=3600
+youtube.web.home = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/(\?.*)?$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js?v=20260823.2,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}",script-update-interval=3600
+youtube.web.watch = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/watch\?.*$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js?v=20260823.2,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}",script-update-interval=3600
+youtube.web.results = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/results\?.*$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js?v=20260823.2,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}",script-update-interval=3600
+youtube.web.shorts = type=http-response,pattern=^https:\/\/(www\.|m\.)?youtube\.com\/shorts\/.*$,requires-body=1,max-size=-1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/youtube-premium-like.js?v=20260823.2,argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}",script-update-interval=3600
+youtube.mobile.response = type=http-response,pattern=^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|config|log_event)(\?.*)?$,requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/vendor/youtube-mobile-response.js?v=20260823.2,argument="{\"captionLang\":\"off\",\"blockUpload\":false,\"blockImmersive\":false,\"blockShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}",script-update-interval=3600
 
 [MITM]
 hostname = %APPEND% www.youtube.com, youtube.com, m.youtube.com, youtubei.googleapis.com

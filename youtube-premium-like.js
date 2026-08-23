@@ -1,5 +1,5 @@
 /*
- * YouTube Premium-like for Surge Mac
+ * YouTube Premium-like for Surge Web
  * Local-only response cleaner and HTML injector.
  * No outbound requests, account spoofing, or googlevideo segment blocking.
  */
@@ -113,9 +113,19 @@ ytd-banner-promo-renderer, ytd-companion-slot-renderer,
 ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"],
 yt-mealbar-promo-renderer, ytd-feed-nudge-renderer,
 ytd-popup-container:has(a[href="/premium"]),
+ytd-guide-entry-renderer:has(a[href^="/premium"]),
+ytd-guide-entry-renderer:has(a[href*="youtube.com/premium"]),
 ytd-enforcement-message-view-model,
 tp-yt-paper-dialog:has(ytd-enforcement-message-view-model),
 .ytp-ad-overlay-container, .ytp-ad-player-overlay, .ytp-ad-image-overlay {
+  display: none !important;
+}
+ytd-rich-item-renderer:has(ytd-ad-slot-renderer),
+ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer),
+ytd-rich-item-renderer:has(ytd-display-ad-renderer),
+ytd-rich-item-renderer:has(ytd-promoted-video-renderer),
+ytd-rich-item-renderer:has(ytd-promoted-sparkles-web-renderer),
+ytd-rich-grid-row:has(> #contents:empty) {
   display: none !important;
 }
 ${HIDE_SHORTS ? `
@@ -126,6 +136,12 @@ ytd-guide-entry-renderer:has(a[title="Shorts"]) { display: none !important; }
 #surge-premium-pip {
   width: auto !important; min-width: 44px; padding: 0 8px !important;
   color: white; font: 600 12px/40px -apple-system, BlinkMacSystemFont, sans-serif;
+}
+#surge-premium-label {
+  display: inline-flex; align-items: center; height: 32px; margin-left: 5px;
+  color: var(--yt-spec-text-primary); font: 600 13px/32px -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: -.15px;
+  white-space: nowrap;
 }
 `;
 
@@ -253,6 +269,57 @@ const PAGE_SCRIPT = `
         window.ytInitialData.topbar.desktopTopbarRenderer.logo &&
         window.ytInitialData.topbar.desktopTopbarRenderer.logo.topbarLogoRenderer;
       if (logo && logo.iconImage) logo.iconImage.iconType = 'YOUTUBE_PREMIUM_LOGO';
+
+      var anchor = document.querySelector('ytd-topbar-logo-renderer a#logo, ytd-topbar-logo-renderer #logo');
+      if (anchor && !document.getElementById('surge-premium-label')) {
+        var label = document.createElement('span');
+        label.id = 'surge-premium-label';
+        label.textContent = 'Premium';
+        label.setAttribute('aria-hidden', 'true');
+        anchor.appendChild(label);
+        anchor.setAttribute('aria-label', 'YouTube Premium');
+      }
+    } catch (_) {}
+  }
+
+  var AD_MARKERS = [
+    'ytd-ad-slot-renderer', 'ytd-in-feed-ad-layout-renderer',
+    'ytd-display-ad-renderer', 'ytd-promoted-video-renderer',
+    'ytd-promoted-sparkles-web-renderer', 'ytd-promoted-sparkles-text-search-renderer'
+  ].join(',');
+
+  var CONTENT_MARKERS = [
+    'ytd-rich-grid-media', 'yt-lockup-view-model', 'ytd-video-renderer',
+    'ytd-playlist-renderer', 'ytd-post-renderer', 'ytd-reel-item-renderer',
+    'ytd-rich-section-renderer', 'a[href*="/watch"]', 'a[href*="/shorts/"]'
+  ].join(',');
+
+  function removeAdShells() {
+    try {
+      document.querySelectorAll('ytd-rich-item-renderer').forEach(function (item) {
+        if (item.querySelector(AD_MARKERS)) {
+          item.remove();
+          return;
+        }
+
+        var hasContent = item.querySelector(CONTENT_MARKERS);
+        var hasText = (item.textContent || '').trim().length > 0;
+        if (hasContent || hasText) {
+          delete item.dataset.surgeEmptySince;
+          return;
+        }
+
+        var now = Date.now();
+        var since = Number(item.dataset.surgeEmptySince || now);
+        if (!item.dataset.surgeEmptySince) item.dataset.surgeEmptySince = String(now);
+        else if (now - since > 1500) item.remove();
+      });
+
+      document.querySelectorAll('ytd-guide-entry-renderer a[href^="/premium"], ytd-guide-entry-renderer a[href*="youtube.com/premium"]')
+        .forEach(function (entry) {
+          var row = entry.closest('ytd-guide-entry-renderer');
+          if (row) row.remove();
+        });
     } catch (_) {}
   }
 
@@ -279,22 +346,45 @@ const PAGE_SCRIPT = `
     cleanObject(window.ytInitialData);
     cleanObject(window.ytInitialPlayerResponse);
     setPremiumLogo();
+    removeAdShells();
     addPipButton();
     dismissAd();
     restoreAudio();
   }
 
-  document.addEventListener('yt-navigate-finish', function(){ setTimeout(sync, 0); }, true);
+  var syncTimer = null;
+  function scheduleSync() {
+    if (syncTimer) return;
+    syncTimer = setTimeout(function () { syncTimer = null; sync(); }, 60);
+  }
+
+  document.addEventListener('yt-navigate-finish', scheduleSync, true);
   document.addEventListener('DOMContentLoaded', sync, true);
-  setInterval(sync, 250);
+  new MutationObserver(scheduleSync).observe(document.documentElement, { childList: true, subtree: true });
+  setInterval(sync, 1000);
   setTimeout(sync, 0);
 })();
 `;
 
 function inject(html) {
+  if (html.indexOf('surge-premium-like-js') !== -1) return html;
   const block = `<style id="surge-premium-like-css">${CSS}</style><script id="surge-premium-like-js">${PAGE_SCRIPT}</script>`;
   const index = html.indexOf('<head>');
   return index >= 0 ? html.slice(0, index + 6) + block + html.slice(index + 6) : block + html;
+}
+
+function headersWithoutPageCsp(headers) {
+  const result = Object.assign({}, headers || {});
+  const blocked = new Set([
+    'content-security-policy',
+    'content-security-policy-report-only',
+    'x-content-security-policy',
+    'content-length'
+  ]);
+  for (const key of Object.keys(result)) {
+    if (blocked.has(key.toLowerCase())) delete result[key];
+  }
+  return result;
 }
 
 (function main() {
@@ -307,13 +397,15 @@ function inject(html) {
       const value = JSON.parse(body);
       clean(value);
       body = JSON.stringify(value);
+      if (DEBUG) console.log('[YouTube Premium-like] processed API ' + url);
+      $done({ body });
     } else {
       body = rewriteInlineJson(body, 'ytInitialData');
       body = rewriteInlineJson(body, 'ytInitialPlayerResponse');
       body = inject(body);
+      if (DEBUG) console.log('[YouTube Premium-like] processed page ' + url);
+      $done({ body, headers: headersWithoutPageCsp($response.headers) });
     }
-    if (DEBUG) console.log('[YouTube Premium-like] processed ' + url);
-    $done({ body });
   } catch (error) {
     if (DEBUG) console.log('[YouTube Premium-like] passthrough: ' + error);
     $done({});
