@@ -6,6 +6,9 @@ const source = fs.readFileSync(new URL('../youtube-premium-like.js', `file://${_
 assert.equal(source.includes('window.fetch ='), false);
 assert.equal(source.includes("trap('ytInitialData')"), false);
 assert.equal(source.includes('ytd-popup-container:has(a[href="/premium"])'), false);
+assert.equal(source.includes('surge-premium'), false);
+assert.equal(source.includes('<style'), false);
+assert.equal(source.includes('<script'), false);
 
 function run(url, body, headers = {}) {
   let result;
@@ -51,22 +54,14 @@ const page = run(
     'Content-Type': 'text/html; charset=utf-8'
   }
 );
-assert.match(page.body, /surge-premium-like-js/);
-assert.match(page.body, /surge-premium-brand/);
-assert.match(page.body, /surge-premium-play/);
-assert.match(page.body, /var ytInitialData = \{"ok":true\};/);
-assert.equal(page.headers['Content-Security-Policy'], undefined);
-assert.equal(page.headers['Content-Security-Policy-Report-Only'], undefined);
-assert.equal(page.headers['Content-Length'], undefined);
-assert.equal(page.headers['Content-Type'], 'text/html; charset=utf-8');
+assert.deepEqual(Object.keys(page), []);
 
 const musicPage = run(
   'https://music.youtube.com/',
   '<html><head></head><body><script>var ytInitialData = {"adPlacements":[{}],"music":true};</script></body></html>',
   { 'Content-Type': 'text/html; charset=utf-8' }
 );
-assert.match(musicPage.body, /surge-music-premium-label/);
-assert.match(musicPage.body, /var ytInitialData = \{"music":true\};/);
+assert.deepEqual(Object.keys(musicPage), []);
 
 const musicScript = run(
   'https://music.youtube.com/s/desktop/app.js',
