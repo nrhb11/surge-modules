@@ -27,7 +27,6 @@ https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/YouTube
 
 默认参数：
 
-- `captionLang=zh-Hans`（手机端优先使用简体中文字幕；设为 `off` 可恢复为完全不干预字幕）
 - `hideShorts=false`
 - `debug=false`
 
