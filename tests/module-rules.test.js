@@ -19,6 +19,8 @@ assert.equal(moduleText.includes('(browse|next|search|player|guide|get_watch)'),
 assert.equal(moduleText.includes('googlevideo.com'), true);
 assert.equal(moduleText.includes('/ptracking'), false);
 assert.equal(moduleText.includes('/api\\/stats\\/ads'), false);
+assert.equal(moduleText.includes('#!arguments=captionLang:zh-Hans'), true);
+assert.equal(moduleText.includes('\\"captionLang\\":\\"{{{captionLang}}}\\"'), true);
 
 const ctier = /(^https?:\/\/[\w-]+\.googlevideo\.com\/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+)/;
 const playback = 'https://rr1---sn-test.googlevideo.com/initplayback?id=1&ctier=L&foo=2,ctier,tail';
