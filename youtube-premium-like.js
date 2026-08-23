@@ -268,17 +268,23 @@ const PAGE_SCRIPT = `
         window.ytInitialData.topbar.desktopTopbarRenderer &&
         window.ytInitialData.topbar.desktopTopbarRenderer.logo &&
         window.ytInitialData.topbar.desktopTopbarRenderer.logo.topbarLogoRenderer;
-      if (logo && logo.iconImage) logo.iconImage.iconType = 'YOUTUBE_PREMIUM_LOGO';
+      var officialPremium = false;
+      if (logo && logo.iconImage) {
+        logo.iconImage.iconType = 'YOUTUBE_PREMIUM_LOGO';
+        officialPremium = true;
+      }
 
       var anchor = document.querySelector('ytd-topbar-logo-renderer a#logo, ytd-topbar-logo-renderer #logo');
-      if (anchor && !document.getElementById('surge-premium-label')) {
+      var existingLabel = document.getElementById('surge-premium-label');
+      if (officialPremium && existingLabel) existingLabel.remove();
+      if (anchor && !officialPremium && !existingLabel) {
         var label = document.createElement('span');
         label.id = 'surge-premium-label';
         label.textContent = 'Premium';
         label.setAttribute('aria-hidden', 'true');
         anchor.appendChild(label);
-        anchor.setAttribute('aria-label', 'YouTube Premium');
       }
+      if (anchor) anchor.setAttribute('aria-label', 'YouTube Premium');
     } catch (_) {}
   }
 
