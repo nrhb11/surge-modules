@@ -15,7 +15,7 @@ function run(body, headers = {}) {
   return result;
 }
 
-const html = '<html><head></head><body><script nonce="keep">var ytInitialData = {"contents":[{"adSlotRenderer":{"slot":1}},{"videoRenderer":{"videoId":"ok"}}],"text":"brace } and \\\"quote\\\""};</script></body></html>';
+const html = '<html><head></head><body><script nonce="keep">var ytInitialData = {"contents":[{"richItemRenderer":{"content":{"adSlotRenderer":{"slot":1}},"trackingParams":"ad-shell"}},{"richItemRenderer":{"content":{"videoRenderer":{"videoId":"ok"}}}}],"text":"brace } and \\\"quote\\\""};</script></body></html>';
 const result = run(html, {
   'Content-Security-Policy': "script-src 'nonce-keep'",
   'Content-Security-Policy-Report-Only': 'default-src self',
@@ -26,6 +26,7 @@ const result = run(html, {
 
 assert.equal(result.body.includes('adSlotRenderer'), false);
 assert.equal(result.body.includes('"videoId":"ok"'), true);
+assert.equal(result.body.includes('ad-shell'), false);
 assert.equal(result.body.includes('nonce="keep"'), true);
 assert.equal(result.headers['Content-Security-Policy'], "script-src 'nonce-keep'");
 assert.equal(result.headers['Content-Security-Policy-Report-Only'], 'default-src self');

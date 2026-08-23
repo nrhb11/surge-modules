@@ -25,11 +25,18 @@ function run(url, body, headers = {}) {
 
 const api = run(
   'https://www.youtube.com/youtubei/v1/browse',
-  JSON.stringify({ adSlots: [{ adSlotRenderer: {} }], contents: [{ videoRenderer: { videoId: 'ok' } }] })
+  JSON.stringify({
+    adSlots: [{ adSlotRenderer: {} }],
+    contents: [
+      { richItemRenderer: { content: { adSlotRenderer: {} }, trackingParams: 'ad-shell' } },
+      { richItemRenderer: { content: { videoRenderer: { videoId: 'ok' } } } }
+    ]
+  })
 );
 const apiBody = JSON.parse(api.body);
 assert.equal('adSlots' in apiBody, false);
-assert.equal(apiBody.contents[0].videoRenderer.videoId, 'ok');
+assert.equal(apiBody.contents.length, 1);
+assert.equal(apiBody.contents[0].richItemRenderer.content.videoRenderer.videoId, 'ok');
 
 const musicApi = run(
   'https://music.youtube.com/youtubei/v1/player',

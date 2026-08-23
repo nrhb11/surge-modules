@@ -21,6 +21,25 @@ const SHORTS_KEYS = new Set([
   'reelShelfRenderer', 'shortsShelfRenderer', 'reelItemRenderer',
   'shortsLockupViewModel', 'shortsLockupViewModelV2', 'compactReelRenderer'
 ]);
+const SHELL_RENDERERS = new Set([
+  'richItemRenderer', 'richSectionRenderer', 'itemSectionRenderer'
+]);
+
+function hasRenderableLeaf(node, seen = new WeakSet(), depth = 0) {
+  if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return false;
+  seen.add(node);
+  for (const key of Object.keys(node)) {
+    if ((key.endsWith('Renderer') || key.endsWith('ViewModel')) && !SHELL_RENDERERS.has(key)) return true;
+    if (hasRenderableLeaf(node[key], seen, depth + 1)) return true;
+  }
+  return false;
+}
+
+function isVacantRendererShell(node) {
+  if (!node || typeof node !== 'object' || Array.isArray(node)) return false;
+  if (!Object.keys(node).some((key) => SHELL_RENDERERS.has(key))) return false;
+  return !hasRenderableLeaf(node);
+}
 
 function clean(node, seen = new WeakSet(), depth = 0) {
   if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return 0;
@@ -38,6 +57,10 @@ function clean(node, seen = new WeakSet(), depth = 0) {
         removed++;
       } else {
         removed += clean(item, seen, depth + 1);
+        if (isVacantRendererShell(item)) {
+          node.splice(i, 1);
+          removed++;
+        }
       }
     }
     return removed;
