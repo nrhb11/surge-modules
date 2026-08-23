@@ -19,7 +19,8 @@ const REMOVE_KEYS = new Set([
   'compactPromotedItemRenderer', 'compactPromotedVideoRenderer', 'carouselAdRenderer',
   'playerLegacyDesktopWatchAdsRenderer', 'videoMastheadAdRenderer', 'videoMastheadAdV3Renderer',
   'imageAdRenderer', 'inStreamVideoAdRenderer', 'companionAdsRenderer', 'companionAdRenderer',
-  'enforcementMessageViewModel', 'adBlockerOverlay', 'adBlockDetected'
+  'mealbarPromoRenderer', 'statementBannerRenderer', 'musicPremiumUpsellRenderer',
+  'premiumUpsellLinkRenderer', 'enforcementMessageViewModel', 'adBlockerOverlay', 'adBlockDetected'
 ]);
 
 const SHORTS_KEYS = new Set([
@@ -114,6 +115,7 @@ ytd-video-masthead-ad-v3-renderer, ytd-player-legacy-desktop-watch-ads-renderer,
 ytd-action-companion-ad-renderer, ytm-promoted-sparkles-web-renderer,
 ytm-ad-slot-renderer,
 ytmusic-mealbar-promo-renderer, ytmusic-statement-banner-renderer,
+ytmusic-premium-upsell-renderer,
 ytmusic-player-queue-item[is-ad], ytmusic-player-queue-item[ad-playing],
 ytd-banner-promo-renderer, ytd-companion-slot-renderer,
 ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"],
@@ -121,6 +123,7 @@ yt-mealbar-promo-renderer, ytd-feed-nudge-renderer,
 ytd-popup-container:has(a[href="/premium"]),
 ytd-guide-entry-renderer:has(a[href^="/premium"]),
 ytd-guide-entry-renderer:has(a[href*="youtube.com/premium"]),
+ytmusic-guide-entry-renderer:has(a[href*="premium"]),
 ytd-enforcement-message-view-model,
 tp-yt-paper-dialog:has(ytd-enforcement-message-view-model),
 .ytp-ad-overlay-container, .ytp-ad-player-overlay, .ytp-ad-image-overlay {
@@ -334,7 +337,8 @@ const PAGE_SCRIPT = `
     'ytd-video-masthead-ad-v3-renderer', 'ytd-player-legacy-desktop-watch-ads-renderer',
     'ytd-action-companion-ad-renderer', 'ytm-promoted-sparkles-web-renderer',
     'ytm-ad-slot-renderer', 'ytmusic-mealbar-promo-renderer',
-    'ytmusic-statement-banner-renderer', 'ytmusic-player-queue-item[is-ad]',
+    'ytmusic-statement-banner-renderer', 'ytmusic-premium-upsell-renderer',
+    'ytmusic-player-queue-item[is-ad]',
     'ytmusic-player-queue-item[ad-playing]'
   ].join(',');
 

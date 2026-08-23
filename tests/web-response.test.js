@@ -27,10 +27,15 @@ assert.equal(apiBody.contents[0].videoRenderer.videoId, 'ok');
 
 const musicApi = run(
   'https://music.youtube.com/youtubei/v1/player',
-  JSON.stringify({ playerAds: [{ inStreamVideoAdRenderer: {} }], videoDetails: { videoId: 'music-ok' } })
+  JSON.stringify({
+    playerAds: [{ inStreamVideoAdRenderer: {} }],
+    overlay: { musicPremiumUpsellRenderer: {} },
+    videoDetails: { videoId: 'music-ok' }
+  })
 );
 const musicApiBody = JSON.parse(musicApi.body);
 assert.equal('playerAds' in musicApiBody, false);
+assert.equal('musicPremiumUpsellRenderer' in musicApiBody.overlay, false);
 assert.equal(musicApiBody.videoDetails.videoId, 'music-ok');
 
 const page = run(
