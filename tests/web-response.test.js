@@ -49,6 +49,7 @@ const page = run(
   }
 );
 assert.match(page.body, /surge-premium-like-js/);
+assert.match(page.body, /surge-premium-label/);
 assert.match(page.body, /var ytInitialData = \{"ok":true\};/);
 assert.equal(page.headers['Content-Security-Policy'], undefined);
 assert.equal(page.headers['Content-Security-Policy-Report-Only'], undefined);
@@ -57,9 +58,24 @@ assert.equal(page.headers['Content-Type'], 'text/html; charset=utf-8');
 
 const musicPage = run(
   'https://music.youtube.com/',
-  '<html><head></head><body><script>var ytInitialData = {"adPlacements":[{}],"music":true};</script></body></html>'
+  '<html><head></head><body><script>var ytInitialData = {"adPlacements":[{}],"music":true};</script></body></html>',
+  { 'Content-Type': 'text/html; charset=utf-8' }
 );
 assert.match(musicPage.body, /surge-music-premium-label/);
 assert.match(musicPage.body, /var ytInitialData = \{"music":true\};/);
+
+const musicScript = run(
+  'https://music.youtube.com/s/desktop/app.js',
+  'window.musicApplication = true;',
+  { 'Content-Type': 'application/javascript; charset=utf-8' }
+);
+assert.equal(Object.keys(musicScript).length, 0);
+
+const musicStyle = run(
+  'https://music.youtube.com/s/desktop/app.css',
+  'html,body{background:#000}',
+  { 'Content-Type': 'text/css' }
+);
+assert.equal(Object.keys(musicStyle).length, 0);
 
 console.log('web response tests passed');

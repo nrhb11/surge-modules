@@ -6,6 +6,7 @@
 - YouTube Music 网页版：清理首页、搜索、队列和播放器广告及 Premium 推广。
 - 网页界面：隐藏 Premium 推销入口，显示 Premium 风格标识，增加 PiP 按钮。
 - iPhone / iPad 的 YouTube 与 YouTube Music App：清理 protobuf 响应广告字段，并写入画中画、后台播放能力字段。
+- 对仍使用 `ctier/oad` 播放链路的 iPhone/iPad 版本，增加视频 CDN 广告兜底；明确排除常规 `videoplayback` 正片入口。
 - 保留观看历史、续播和正常播放统计。
 - 不拦截 `googlevideo.com` 正片分片，不使用第三方 Cloudflare Worker。
 

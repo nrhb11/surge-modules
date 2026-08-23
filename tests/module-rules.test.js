@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+
+const ctier = /(^https?:\/\/[\w-]+\.googlevideo\.com\/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+)/;
+const playback = 'https://rr1---sn-test.googlevideo.com/initplayback?id=1&ctier=L&foo=2,ctier,tail';
+const rewritten = playback.replace(ctier, '$1$2$3');
+assert.equal(rewritten.includes('ctier'), false);
+assert.equal(rewritten, 'https://rr1---sn-test.googlevideo.com/initplayback?id=1&foo=2tail');
+
+const oad = /^https?:\/\/[\w-]+\.googlevideo\.com\/(?!(dclk_video_ads|videoplayback(?:\?|\/))).+&oad/;
+assert.equal(oad.test('https://rr1---sn-test.googlevideo.com/initplayback?id=1&oad=1'), true);
+assert.equal(oad.test('https://rr1---sn-test.googlevideo.com/videoplayback?id=1&oad=1'), false);
+assert.equal(oad.test('https://rr1---sn-test.googlevideo.com/dclk_video_ads?id=1&oad=1'), false);
+
+console.log('module fallback rule tests passed');

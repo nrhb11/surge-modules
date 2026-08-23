@@ -146,28 +146,11 @@ ytd-guide-entry-renderer:has(a[title="Shorts"]) { display: none !important; }
   width: auto !important; min-width: 44px; padding: 0 8px !important;
   color: white; font: 600 12px/40px -apple-system, BlinkMacSystemFont, sans-serif;
 }
-ytd-topbar-logo-renderer #logo.surge-premium-brand-ready > :not(#surge-premium-brand) {
-  display: none !important;
-}
-#surge-premium-brand {
-  display: inline-flex !important; align-items: center; gap: 5px; height: 32px;
-  color: var(--yt-spec-text-primary, #f1f1f1); white-space: nowrap;
-  font-family: Roboto, Arial, sans-serif; line-height: 1;
-}
-#surge-premium-brand .surge-premium-play {
-  position: relative; display: inline-block; width: 29px; height: 20px;
-  flex: 0 0 29px; border-radius: 6px; background: #ff0033;
-}
-#surge-premium-brand .surge-premium-play::after {
-  content: ""; position: absolute; left: 11px; top: 5px; width: 0; height: 0;
-  border-top: 5px solid transparent; border-bottom: 5px solid transparent;
-  border-left: 8px solid #fff;
-}
-#surge-premium-brand .surge-premium-youtube {
-  font-size: 18px; font-weight: 700; letter-spacing: -1px;
-}
-#surge-premium-brand .surge-premium-word {
-  margin-left: -2px; font-size: 14px; font-weight: 500; letter-spacing: -.2px;
+#surge-premium-label {
+  display: inline-flex !important; align-items: center; height: 32px;
+  margin-left: 4px; color: var(--yt-spec-text-primary, #f1f1f1);
+  white-space: nowrap; font: 500 14px/32px Roboto, Arial, sans-serif;
+  letter-spacing: -.2px;
 }
 #surge-music-premium-label {
   display: inline-flex; align-items: center; height: 28px; margin-left: 6px;
@@ -313,18 +296,15 @@ const PAGE_SCRIPT = `
       var anchor = document.querySelector('ytd-topbar-logo-renderer a#logo, ytd-topbar-logo-renderer #logo');
       if (!anchor) return;
 
-      anchor.classList.add('surge-premium-brand-ready');
       anchor.setAttribute('aria-label', 'YouTube Premium');
 
-      var brand = anchor.querySelector(':scope > #surge-premium-brand');
-      if (!brand) {
-        brand = document.createElement('span');
-        brand.id = 'surge-premium-brand';
-        brand.setAttribute('aria-hidden', 'true');
-        brand.innerHTML = '<span class="surge-premium-play"></span>' +
-          '<span class="surge-premium-youtube">YouTube</span>' +
-          '<span class="surge-premium-word">Premium</span>';
-        anchor.appendChild(brand);
+      var label = anchor.querySelector(':scope > #surge-premium-label');
+      if (!label) {
+        label = document.createElement('span');
+        label.id = 'surge-premium-label';
+        label.textContent = 'Premium';
+        label.setAttribute('aria-hidden', 'true');
+        anchor.appendChild(label);
       }
     } catch (_) {}
   }
@@ -563,6 +543,19 @@ function headersWithoutPageCsp(headers) {
   return result;
 }
 
+function responseContentType(headers) {
+  for (const key of Object.keys(headers || {})) {
+    if (key.toLowerCase() === 'content-type') return String(headers[key] || '').toLowerCase();
+  }
+  return '';
+}
+
+function isHtmlResponse(body, headers) {
+  const contentType = responseContentType(headers);
+  if (contentType) return contentType.includes('text/html') || contentType.includes('application/xhtml+xml');
+  return /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(body || '');
+}
+
 (function main() {
   const url = ($request && $request.url) || '';
   let body = $response && $response.body;
@@ -576,6 +569,10 @@ function headersWithoutPageCsp(headers) {
       if (DEBUG) console.log('[YouTube Premium-like] processed API ' + url);
       $done({ body });
     } else {
+      if (!isHtmlResponse(body, $response.headers)) {
+        $done({});
+        return;
+      }
       body = rewriteInlineJson(body, 'ytInitialData');
       body = rewriteInlineJson(body, 'ytInitialPlayerResponse');
       body = inject(body);
