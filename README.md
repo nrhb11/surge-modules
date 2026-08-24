@@ -1,62 +1,69 @@
-# YouTube Ads Cleaner Universal for Surge
+# Surge Modules Hub
 
-一个由自己的 GitHub 仓库完整托管的 Surge 模块，覆盖：
+> ⚡ 个人自用与维护的 Surge (Mac / iOS / iPadOS) 模块与规则脚本集中管理仓库。所有模块均通过本仓库独立托管，支持一键通过 URL 订阅与自动更新。
 
-- macOS 的 YouTube 网页版：清理接口广告字段及首页内嵌的首屏广告数据；不注入页面脚本、样式或 Premium 外观，保证登录、菜单与播放来源完整。
-- YouTube Music 网页版：保持 Safari 原生页面与请求头，只清理首页、搜索、队列和播放器接口中的广告；不修改 Music HTML 页面。
-- iPhone / iPad 的 YouTube 与 YouTube Music App：使用仓库内置的原版移动处理器，清理广告并处理字幕、画中画和后台播放能力。
-- iPhone/iPad 使用移动端响应处理器，并保留已验证有效的 `ctier/oad` 视频广告兜底；普通 `videoplayback` 正片明确排除。
-- 保留观看历史、续播和正常播放统计。
-- 不拦截 `googlevideo.com` 正片分片，不使用第三方 Cloudflare Worker。
+---
 
-## 安装 URL
+## 📦 模块总览与一键安装
 
-在 Surge 的“模块”中选择“从 URL 安装”，粘贴：
+| 分类 | 模块名称 | 适用平台 | 功能说明 | Surge 安装 URL (Raw) | 文档 |
+| :--- | :--- | :--- | :--- | :--- | :---: |
+| 🎬 **影音视听** | **YouTube Premium-like** | Mac / iOS / iPadOS | 网页及 App 去广告、画中画(PiP)、后台播放、保留历史进度 | `https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/YouTube-Premium-Like.sgmodule` | [详情](modules/streaming/youtube/README.md) |
+| 🛡️ **广告与隐私** | *待扩展* | - | 通用广告过滤、追踪拦截等 | - | - |
+| 🌐 **网络与分流** | *待扩展* | - | DNS 优化、GEOIP 分流扩展等 | - | - |
+| 🛠️ **实用工具** | *待扩展* | - | 面板信息、自动化脚本等 | - | - |
 
-```text
-https://raw.githubusercontent.com/nrhb11/surge-youtube-premium-like/main/YouTube-Premium-Like.sgmodule
+---
+
+## 🚀 如何在 Surge 中安装模块
+
+1. **复制 URL**：在上方表格中复制对应模块的 `Surge 安装 URL`。
+2. **导入 Surge**：
+   - **Surge Mac**：点击菜单栏图标 -> `配置 (Configuration)` -> `模块 (Modules)` -> `从 URL 安装 (Install from URL...)`，粘贴 URL 并保存。
+   - **Surge iOS / iPadOS**：打开 Surge -> `首页 (Home)` -> `模块 (Modules)` -> `从 URL 安装`，粘贴并启用。
+3. **前置条件检查**：
+   - 确保已开启 **MITM** 并已信任 **Surge CA 证书**（iOS 需在“设置 -> 通用 -> 关于本机 -> 证书信任设置”中完全信任）。
+   - 确保 **Rewrite** 与 **Scripting (脚本)** 已处于启用状态。
+4. **参数微调**：点击已安装的模块即可展开图形化参数设置（例如 Shorts 开关、调试模式等）。
+
+---
+
+## 📂 仓库目录结构
+
+```
+surge-modules/
+├── README.md                               # 模块索引总览与使用指南
+├── LICENSE                                 # 仓库开源许可证 (MIT)
+├── NOTICE                                  # 第三方组件来源与版权声明
+├── modules/                                # 模块主目录
+│   ├── streaming/                          # 🎬 影音流媒体类模块
+│   │   └── youtube/                        # YouTube 去广告与增强
+│   │       ├── YouTube-Premium-Like.sgmodule
+│   │       ├── README.md
+│   │       ├── scripts/                    # 纯自研/本地脚本
+│   │       └── vendor/                     # 固化的第三方依赖
+│   ├── privacy/                            # 🛡️ 隐私保护与广告拦截模块
+│   ├── network/                            # 🌐 网络优化、DNS 与分流规则
+│   └── utilities/                          # 🛠️ 生产力、面板与辅助工具
+├── tests/                                  # 自动化测试套件
+└── YouTube-Premium-Like.sgmodule           # 根目录兼容文件（兼容历史旧链接）
 ```
 
-随后确认：
+---
 
-1. Surge 已生成并信任本机 MITM CA；iPhone/iPad 还需安装证书并在系统设置中开启“完全信任”。
-2. MITM、Rewrite、Scripting 已启用。
-3. 设备流量确实经过这台 Surge，或 iOS/iPadOS 上直接运行 Surge。
-4. 没有同时启用其他 YouTube 去广告模块。
-5. 关闭 YouTube 网页或 App 后重新打开；旧缓存异常时再清理 YouTube 网站数据或重启 App。
+## 🧩 模块开发与扩展规范
 
-默认参数：
+当需要向本仓库新增模块时，遵循以下规范：
 
-- `hideShorts=false`
-- `debug=false`
+1. **分类存放**：在 `modules/<分类>/<模块名>/` 下创建模块目录。
+2. **独立依赖**：所有 `.sgmodule` 中调用的 JavaScript 脚本均存放在对应模块的 `scripts/` 或 `vendor/` 目录下，`script-path` 统一使用本仓库的 `raw.githubusercontent.com/nrhb11/surge-modules/main/...` 链接。
+3. **参数化配置**：尽量使用 `#!arguments` 和 `#!arguments-desc` 提供可配置开关，增强模块灵活性。
+4. **单元测试**：针对复杂的响应改写或 Protobuf 处理，在 `tests/` 中编写对应的 Node.js 测试用例。
+5. **更新索引**：在根目录 `README.md` 的表格中添加新模块条目与安装 URL。
 
-## 独立性与供应链
+---
 
-模块运行时只加载 `nrhb11/surge-youtube-premium-like` 仓库内的脚本。移动端处理器已经固定并内置在 `vendor/`，不再引用参考项目的 Raw URL；参考项目以后改名、删除或停止维护，不会直接导致本模块失效。
+## 📄 License
 
-这不等于“永远不用维护”：YouTube 如果修改接口字段、protobuf 结构或反代理策略，任何去广告脚本都可能需要更新。仓库独立解决的是第三方源失效，不是 YouTube 协议永久不变。
-
-## 旧规则的取舍
-
-移动端保留已验证有效的 `ctier=L` 与 `oad` 兜底，但 `oad` 明确排除 `videoplayback` 正片入口。网页播放器统计和字幕接口保持原生，不再阻断；也没有加入会把加密初始化数据转发到第三方 Worker 的脚本。
-
-## 限制
-
-这不会改变 Google 账号的真实订阅状态，也不能解锁离线下载、会员内容或服务器端 Premium 专属码率。模块不再伪装 Premium 外观；App 的字幕、PiP 与后台播放仍取决于具体版本和服务端校验。
-
-## 回滚
-
-在 Surge 中停用或删除模块，随后完全刷新 YouTube 或重启 App。
-
-## 文件
-
-- `YouTube-Premium-Like.sgmodule`：Mac + iPhone/iPad 通用入口。
-- `youtube-premium-like.js`：纯接口 JSON 广告清理脚本，不注入网页、不改 Logo、不伪装 Premium 外观。
-- `youtube-home-response.js`：只改写首页已有的 `ytInitialData`，删除首屏广告节点并保留原有 CSP；不注入任何页面代码。
-- `youtube-web-request.js`：修复旧缓存页面可能产生的 `Origin: null`，不修改 Cookie 或请求正文。
-- `vendor/youtube-mobile-response.js`：仓库内置的移动端 protobuf 响应处理器。
-- `NOTICE`、`vendor/LICENSE-APACHE-2.0`：第三方代码来源与许可证。
-
-## License
-
-本项目自有代码使用 MIT License。`vendor/youtube-mobile-response.js` 按 Apache License 2.0 使用，详见 `NOTICE`。
+- 本仓库自有代码与模块配置均遵循 [MIT License](LICENSE)。
+- 第三方组件与引用库遵循原作者开源协议，详见 [NOTICE](NOTICE)。

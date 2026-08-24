@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(new URL('../youtube-home-response.js', `file://${__dirname}/`), 'utf8');
+const source = fs.readFileSync(new URL('../modules/streaming/youtube/scripts/youtube-home-response.js', `file://${__dirname}/`), 'utf8');
 
 function run(body, headers = {}) {
   let result;
