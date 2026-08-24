@@ -2,8 +2,8 @@
 #!desc = YouTube + YouTube Music，覆盖 Mac 网页与 iPhone/iPad App：清理广告并保持登录、菜单与播放链路原生完整；集成并发双语字幕引擎，自动将外文字幕翻译并同屏呈现中英双语。所有运行脚本均托管在本仓库。
 #!author = nrhb11 & Maasea
 #!category = Streaming
-#!version = 2.1.2
-#!date = 2026-08-24 22:10:00
+#!version = 2.1.3
+#!date = 2026-08-24 22:15:00
 #!arguments = hideShorts:false,debug:false
 #!arguments-desc = hideShorts: 是否隐藏 Shorts；debug: 是否输出调试日志。
 
@@ -23,7 +23,13 @@ DOMAIN,youtube-ads.l.google.com,REJECT-TINYGIF,pre-matching,extended-matching
 ^https?:\/\/(www\.|m\.)?youtube\.com\/get_midroll_ _ reject
 
 [Header Rewrite]
+# --- 禁用字幕缓存与强制明文返回，确保双语引擎 100% 命中 ---
+^https?:\/\/(www\.|m\.)?youtube\.com\/api\/timedtext request-header-del If-None-Match
+^https?:\/\/(www\.|m\.)?youtube\.com\/api\/timedtext request-header-del If-Modified-Since
 ^https?:\/\/(www\.|m\.)?youtube\.com\/api\/timedtext request-header-replace Accept-Encoding identity
+^https?:\/\/(www\.|m\.)?youtube\.com\/api\/timedtext response-header-replace Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+^https?:\/\/(www\.|m\.)?youtube\.com\/api\/timedtext response-header-del ETag
+^https?:\/\/(www\.|m\.)?youtube\.com\/api\/timedtext response-header-del Last-Modified
 
 [Map Local]
 ^https?:\/\/[\w-]+\.googlevideo\.com\/(?!(dclk_video_ads|videoplayback(?:\?|\/))).+&oad data-type=text data=" " status-code=200
@@ -39,7 +45,7 @@ youtube.music.api = type=http-response, pattern=^https:\/\/music\.youtube\.com\/
 youtube.mobile.response = type=http-response, pattern=^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|config|log_event)(\?.*)?$, requires-body=1, max-size=-1, binary-body-mode=1, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/vendor/youtube-mobile-response.js?v=20260824.1, argument="{\"captionLang\":\"off\",\"blockUpload\":false,\"blockImmersive\":false,\"blockShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}", script-update-interval=3600
 
 # --- YouTube 实时双语字幕引擎 (并发高速版) ---
-youtube.dual.subtitles = type=http-response, pattern=^https?:\/\/(www\.|m\.)?youtube\.com\/api\/timedtext(\?.*)?$, requires-body=1, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/scripts/youtube-dual-subtitles.js?v=20260824.3, script-update-interval=3600
+youtube.dual.subtitles = type=http-response, pattern=^https?:\/\/(www\.|m\.)?youtube\.com\/api\/timedtext(\?.*)?$, requires-body=1, max-size=-1, timeout=15, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/scripts/youtube-dual-subtitles.js?v=20260824.4, script-update-interval=3600
 
 [MITM]
 hostname = %APPEND% -redirector*.googlevideo.com, *.googlevideo.com, www.youtube.com, youtube.com, m.youtube.com, music.youtube.com, s.youtube.com, youtubei.googleapis.com
