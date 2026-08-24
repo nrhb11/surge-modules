@@ -12,19 +12,14 @@
     return;
   }
 
-  console.log(`[DualSubs] Intercepted timedtext: ${url.substring(0, 80)}... (body length: ${rawBody.length})`);
-
-  // Extract query parameters
+  // Parse URL
   const urlObj = (() => {
     try { return new URL(url); } catch (_) { return null; }
   })();
   const lang = urlObj ? (urlObj.searchParams.get("lang") || urlObj.searchParams.get("tlang") || "") : "";
   
-  // If the requested language is already native Chinese (e.g. video has official Chinese track), pass through
-  if (lang === "zh-Hans" || lang === "zh-CN" || lang === "zh-TW" || lang === "zh-HK" || lang === "zh" || lang === "cmn" || lang === "yue") {
-    // Only pass through if not an auto-translate request
+  if (lang === "zh-Hans" || lang === "zh-CN" || lang === "zh-TW" || lang === "zh-HK" || lang === "zh") {
     if (!urlObj.searchParams.get("tlang")) {
-      console.log(`[DualSubs] Native Chinese track detected (${lang}), passing through.`);
       $done({});
       return;
     }
@@ -49,13 +44,8 @@
           }
         }
 
-        console.log(`[DualSubs] Found ${textsToTranslate.length} valid subtitle sentences to translate.`);
-
         if (textsToTranslate.length > 0) {
-          const t0 = Date.now();
           const translatedList = await translateAllParallel(textsToTranslate);
-          console.log(`[DualSubs] Parallel translation finished in ${Date.now() - t0}ms.`);
-
           for (let i = 0; i < validEvents.length; i++) {
             const item = validEvents[i];
             const trans = translatedList[i];
@@ -63,19 +53,17 @@
               item.event.segs = [{ utf8: `${item.original}\n${trans}` }];
             }
           }
-          console.log(`[DualSubs] Successfully injected bilingual subtitles! Returning modified body.`);
           $done({ body: JSON.stringify(json) });
           return;
         }
       }
     }
 
-    // 2. XML Format (Legacy TimedText)
+    // 2. XML Format
     if (rawBody.includes("<timedtext") || rawBody.includes("<transcript")) {
       const pMatches = [...rawBody.matchAll(/<p\s+([^>]*?)>([\s\S]*?)<\/p>/g)];
       if (pMatches.length > 0) {
         const texts = pMatches.map(m => m[2].replace(/<[^>]+>/g, "").trim());
-        console.log(`[DualSubs] Found ${texts.length} XML subtitle sentences.`);
         const translatedList = await translateAllParallel(texts);
         let modifiedXml = rawBody;
         pMatches.forEach((m, idx) => {
@@ -111,7 +99,6 @@
 
       const texts = cues.map(c => c.textLines.map(t => t.text).join(" "));
       if (texts.length > 0) {
-        console.log(`[DualSubs] Found ${texts.length} WebVTT cues.`);
         const translatedList = await translateAllParallel(texts);
         cues.forEach((c, idx) => {
           const trans = translatedList[idx];
@@ -125,10 +112,8 @@
       }
     }
 
-    console.log(`[DualSubs] Format not recognized or empty, passing through: ${rawBody.substring(0, 50)}`);
     $done({});
   } catch (err) {
-    console.log(`[DualSubs] Error: ${err}`);
     $done({});
   }
 })();
@@ -153,7 +138,6 @@ function translateChunk(chunk, targetLang) {
 
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {
-      console.log(`[DualSubs] Translation chunk timed out.`);
       resolve(new Array(chunk.length).fill(""));
     }, 6000);
 
@@ -161,7 +145,6 @@ function translateChunk(chunk, targetLang) {
       $httpClient.get({ url: apiUrl, headers: { "User-Agent": "Mozilla/5.0" } }, (error, response, data) => {
         clearTimeout(timeout);
         if (error || !data) {
-          console.log(`[DualSubs] Translation request error: ${error}`);
           return resolve(new Array(chunk.length).fill(""));
         }
         resolve(parseTranslateResponse(data, chunk.length));
@@ -187,8 +170,7 @@ function parseTranslateResponse(raw, expectedLength) {
       }
     }
     return list;
-  } catch (err) {
-    console.log(`[DualSubs] Parse response error: ${err}`);
+  } catch (_) {
     return new Array(expectedLength).fill("");
   }
 }
