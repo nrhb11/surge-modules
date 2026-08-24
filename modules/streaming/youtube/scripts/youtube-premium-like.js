@@ -19,6 +19,13 @@ const REMOVE_KEYS = new Set([
   'premiumUpsellLinkRenderer', 'enforcementMessageViewModel', 'adBlockerOverlay', 'adBlockDetected'
 ]);
 
+const MUSIC_REMOVE_KEYS = new Set([
+  'adPlacements', 'playerAds', 'adSlots', 'adBreakHeartbeatParams', 'adBreakParams',
+  'adPlacementRenderer', 'adSlotRenderer', 'displayAdRenderer', 'inFeedAdLayoutRenderer',
+  'promotedVideoRenderer', 'imageAdRenderer', 'inStreamVideoAdRenderer', 'companionAdsRenderer',
+  'enforcementMessageViewModel', 'adBlockerOverlay', 'adBlockDetected'
+]);
+
 const SHORTS_KEYS = new Set([
   'reelShelfRenderer', 'shortsShelfRenderer', 'reelItemRenderer',
   'shortsLockupViewModel', 'shortsLockupViewModelV2', 'compactReelRenderer'
@@ -44,29 +51,37 @@ function isVacantRendererShell(node) {
   return !hasRenderableLeaf(node);
 }
 
-function clean(node, seen = new WeakSet(), depth = 0) {
+function clean(node, isMusic = false, seen = new WeakSet(), depth = 0) {
   if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return;
   seen.add(node);
+
+  const removeKeys = isMusic ? MUSIC_REMOVE_KEYS : REMOVE_KEYS;
 
   if (Array.isArray(node)) {
     for (let i = node.length - 1; i >= 0; i--) {
       const item = node[i];
       if (!item || typeof item !== 'object') continue;
       const keys = Object.keys(item);
-      const isAd = keys.some((key) => REMOVE_KEYS.has(key));
-      const isShorts = HIDE_SHORTS && keys.some((key) => SHORTS_KEYS.has(key));
-      if (isAd || isShorts) node.splice(i, 1);
-      else {
-        clean(item, seen, depth + 1);
-        if (isVacantRendererShell(item)) node.splice(i, 1);
+      const isAd = keys.some((key) => removeKeys.has(key));
+      const isShorts = !isMusic && HIDE_SHORTS && keys.some((key) => SHORTS_KEYS.has(key));
+      if (isAd || isShorts) {
+        node.splice(i, 1);
+      } else {
+        clean(item, isMusic, seen, depth + 1);
+        if (!isMusic && isVacantRendererShell(item)) {
+          node.splice(i, 1);
+        }
       }
     }
     return;
   }
 
   for (const key of Object.keys(node)) {
-    if (REMOVE_KEYS.has(key) || (HIDE_SHORTS && SHORTS_KEYS.has(key))) delete node[key];
-    else clean(node[key], seen, depth + 1);
+    if (removeKeys.has(key) || (!isMusic && HIDE_SHORTS && SHORTS_KEYS.has(key))) {
+      delete node[key];
+    } else {
+      clean(node[key], isMusic, seen, depth + 1);
+    }
   }
 
   if (node.playerConfig && typeof node.playerConfig === 'object') {
@@ -80,9 +95,11 @@ function clean(node, seen = new WeakSet(), depth = 0) {
   const body = $response && $response.body;
   if (!body || !url.includes('/youtubei/v1/')) { $done({}); return; }
 
+  const isMusic = url.includes('music.youtube.com');
+
   try {
     const value = JSON.parse(body);
-    clean(value);
+    clean(value, isMusic);
     if (DEBUG) console.log('[YouTube Ads Cleaner] processed ' + url);
     $done({ body: JSON.stringify(value) });
   } catch (error) {
