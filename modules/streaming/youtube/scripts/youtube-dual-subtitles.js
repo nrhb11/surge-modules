@@ -1,6 +1,9 @@
 /**
  * YouTube Real-Time Dual Bilingual Subtitles Engine for Surge (High-Performance Parallel)
  * Author: nrhb11
+ * Features:
+ * - Auto-translates foreign subtitles to Chinese
+ * - Optimizes double-line layout, removes window bounding constraints for clean auto-centering
  */
 
 (async () => {
@@ -35,6 +38,10 @@
 
         for (let i = 0; i < json.events.length; i++) {
           const ev = json.events[i];
+          // Remove 1-line bounding window constraints so two lines center and wrap cleanly
+          delete ev.wWinId;
+          delete ev.wpWinId;
+
           if (ev.segs && Array.isArray(ev.segs)) {
             const fullText = ev.segs.map(s => s.utf8 || "").join("").trim();
             if (fullText && fullText !== "\n") {
