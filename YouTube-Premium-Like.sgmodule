@@ -2,8 +2,8 @@
 #!desc = YouTube + YouTube Music，覆盖 Mac 网页与 iPhone/iPad App：清理广告并保持登录、菜单与播放链路原生完整；集成并发双语字幕引擎，自动将外文字幕翻译并同屏呈现中英双语。所有运行脚本均托管在本仓库。
 #!author = nrhb11 & Maasea
 #!category = Streaming
-#!version = 2.1.5
-#!date = 2026-08-24 22:20:00
+#!version = 2.1.6
+#!date = 2026-08-24 22:22:00
 #!arguments = hideShorts:false,debug:false
 #!arguments-desc = hideShorts: 是否隐藏 Shorts；debug: 是否输出调试日志。
 
@@ -39,7 +39,6 @@ DOMAIN,youtube-ads.l.google.com,REJECT-TINYGIF,pre-matching,extended-matching
 youtube.web.compat = type=http-request, pattern=^https:\/\/(www\.|m\.)?youtube\.com\/youtubei\/v1\/.*, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/scripts/youtube-web-request.js?v=20260824.1, script-update-interval=3600
 youtube.web.home-data = type=http-response, pattern=^https:\/\/(www\.)?youtube\.com\/(\?.*)?$, requires-body=1, max-size=-1, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/scripts/youtube-home-response.js?v=20260824.1, argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}", script-update-interval=3600
 youtube.web.api = type=http-response, pattern=^https:\/\/(www\.|m\.)?youtube\.com\/youtubei\/v1\/(browse|next|search|player|get_watch)(\?.*)?$, requires-body=1, max-size=-1, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/scripts/youtube-premium-like.js?v=20260824.6, argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}", script-update-interval=3600
-youtube.music.api = type=http-response, pattern=^https:\/\/music\.youtube\.com\/youtubei\/v1\/(browse|next|search|player|queue|get_watch)(\?.*)?$, requires-body=1, max-size=-1, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/scripts/youtube-premium-like.js?v=20260824.6, argument="{\"hideShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}", script-update-interval=3600
 
 # --- App 移动端去广告与后台播放 ---
 youtube.mobile.response = type=http-response, pattern=^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|config|log_event)(\?.*)?$, requires-body=1, max-size=-1, binary-body-mode=1, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/vendor/youtube-mobile-response.js?v=20260824.1, argument="{\"captionLang\":\"off\",\"blockUpload\":false,\"blockImmersive\":false,\"blockShorts\":{{{hideShorts}}},\"debug\":{{{debug}}}}", script-update-interval=3600
