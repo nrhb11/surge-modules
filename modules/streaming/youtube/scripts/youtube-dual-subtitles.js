@@ -1,11 +1,11 @@
 /**
- * YouTube Real-Time Dual Bilingual Subtitles Engine for Surge
+ * YouTube Real-Time Dual Bilingual Subtitles Engine for Surge (High-Performance Parallel)
  * Author: nrhb11
  * Features:
- * - Translates foreign subtitles (English/Japanese/Korean/etc.) to Simplified Chinese in real time
- * - Renders original sentence (top) + translated sentence (bottom)
- * - Supports JSON3 (modern Web & Mobile), XML/SRV3, and WebVTT formats
- * - Completely independent from ad-blocking scripts
+ * - Ultra-fast parallel batch translation using Google Translate API
+ * - Full JSON3, XML/SRV3, and WebVTT support
+ * - Top: Original English/Foreign text | Bottom: Simplified Chinese translation
+ * - 100% isolated from ad-blocking scripts
  */
 
 (async () => {
@@ -17,10 +17,9 @@
     return;
   }
 
-  // If the subtitle is already Chinese, pass through directly
+  // Pass through if already Chinese
   const urlObj = (() => {
-    try { return new URL(url); }
-    catch (_) { return null; }
+    try { return new URL(url); } catch (_) { return null; }
   })();
   const lang = urlObj ? (urlObj.searchParams.get("lang") || urlObj.searchParams.get("tlang") || "") : "";
   if (lang.startsWith("zh") || lang.startsWith("cmn") || lang.startsWith("yue")) {
@@ -29,7 +28,7 @@
   }
 
   try {
-    // 1. Handle JSON3 Format (Modern Web & App)
+    // 1. JSON3 Format (Modern Web & Mobile)
     if (rawBody.trim().startsWith("{")) {
       const json = JSON.parse(rawBody);
       if (json.events && Array.isArray(json.events)) {
@@ -48,7 +47,7 @@
         }
 
         if (textsToTranslate.length > 0) {
-          const translatedList = await translateBatch(textsToTranslate);
+          const translatedList = await translateAllParallel(textsToTranslate);
           for (let i = 0; i < validEvents.length; i++) {
             const item = validEvents[i];
             const trans = translatedList[i];
@@ -62,12 +61,12 @@
       }
     }
 
-    // 2. Handle XML Format (Legacy TimedText)
+    // 2. XML Format
     if (rawBody.includes("<timedtext") || rawBody.includes("<transcript")) {
       const pMatches = [...rawBody.matchAll(/<p\s+([^>]*?)>([\s\S]*?)<\/p>/g)];
       if (pMatches.length > 0) {
         const texts = pMatches.map(m => m[2].replace(/<[^>]+>/g, "").trim());
-        const translatedList = await translateBatch(texts);
+        const translatedList = await translateAllParallel(texts);
         let modifiedXml = rawBody;
         pMatches.forEach((m, idx) => {
           const trans = translatedList[idx];
@@ -82,7 +81,7 @@
       }
     }
 
-    // 3. Handle WebVTT Format
+    // 3. WebVTT Format
     if (rawBody.startsWith("WEBVTT")) {
       const lines = rawBody.split("\n");
       const cues = [];
@@ -102,7 +101,7 @@
 
       const texts = cues.map(c => c.textLines.map(t => t.text).join(" "));
       if (texts.length > 0) {
-        const translatedList = await translateBatch(texts);
+        const translatedList = await translateAllParallel(texts);
         cues.forEach((c, idx) => {
           const trans = translatedList[idx];
           if (trans && c.textLines.length > 0) {
@@ -122,38 +121,38 @@
   }
 })();
 
-// Google Translate Batch Processor
-async function translateBatch(texts, targetLang = "zh-CN") {
+// Parallel Batch Translation Engine
+async function translateAllParallel(texts, targetLang = "zh-CN") {
   if (!texts || texts.length === 0) return [];
-  const results = new Array(texts.length).fill("");
-  const CHUNK_SIZE = 40;
-
+  const CHUNK_SIZE = 80;
+  const chunks = [];
   for (let c = 0; c < texts.length; c += CHUNK_SIZE) {
-    const chunk = texts.slice(c, c + CHUNK_SIZE);
-    const query = chunk.map((t, idx) => `[[[${idx}]]] ${t}`).join("\n");
-    const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(query)}`;
-
-    const chunkResults = await new Promise((resolve) => {
-      const timeout = setTimeout(() => resolve(new Array(chunk.length).fill("")), 3500);
-
-      if (typeof $httpClient !== "undefined" && $httpClient.get) {
-        $httpClient.get({ url: apiUrl, headers: { "User-Agent": "Mozilla/5.0" } }, (error, response, data) => {
-          clearTimeout(timeout);
-          if (error || !data) return resolve(new Array(chunk.length).fill(""));
-          resolve(parseTranslateResponse(data, chunk.length));
-        });
-      } else {
-        clearTimeout(timeout);
-        resolve(new Array(chunk.length).fill(""));
-      }
-    });
-
-    for (let idx = 0; idx < chunk.length; idx++) {
-      results[c + idx] = chunkResults[idx] || "";
-    }
+    chunks.push(texts.slice(c, c + CHUNK_SIZE));
   }
 
-  return results;
+  const chunkPromises = chunks.map(chunk => translateChunk(chunk, targetLang));
+  const chunkResults = await Promise.all(chunkPromises);
+  return chunkResults.flat();
+}
+
+function translateChunk(chunk, targetLang) {
+  const query = chunk.map((t, idx) => `[[[${idx}]]] ${t}`).join("\n");
+  const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(query)}`;
+
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(new Array(chunk.length).fill("")), 6000);
+
+    if (typeof $httpClient !== "undefined" && $httpClient.get) {
+      $httpClient.get({ url: apiUrl, headers: { "User-Agent": "Mozilla/5.0" } }, (error, response, data) => {
+        clearTimeout(timeout);
+        if (error || !data) return resolve(new Array(chunk.length).fill(""));
+        resolve(parseTranslateResponse(data, chunk.length));
+      });
+    } else {
+      clearTimeout(timeout);
+      resolve(new Array(chunk.length).fill(""));
+    }
+  });
 }
 
 function parseTranslateResponse(raw, expectedLength) {
