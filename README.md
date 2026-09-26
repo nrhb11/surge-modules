@@ -9,6 +9,7 @@
 | 分类 | 模块名称 | 适用平台 | 功能说明 | Surge 安装 URL (Raw) | 文档 |
 | :--- | :--- | :--- | :--- | :--- | :---: |
 | 🎬 **影音视听** | **YouTube Premium-like** | Mac / iOS / iPadOS | 网页及 App 去广告、画中画(PiP)、后台播放、保留历史进度 | `https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/youtube/YouTube-Premium-Like.sgmodule` | [详情](modules/streaming/youtube/README.md) |
+| 🎬 **影音视听** | **Bilibili 网页版去广告** | Mac / iOS / iPadOS 网页浏览器 | 首页推荐、搜索结果与视频页广告清理；轮播图和直播推广播放器可选隐藏 | `https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/Bilibili-Web-Adblock.sgmodule` | [详情](modules/streaming/bilibili-web/README.md) |
 | 🛡️ **广告与隐私** | *待扩展* | - | 通用广告过滤、追踪拦截等 | - | - |
 | 🌐 **网络与分流** | *待扩展* | - | DNS 优化、GEOIP 分流扩展等 | - | - |
 | 🛠️ **实用工具** | *待扩展* | - | 面板信息、自动化脚本等 | - | - |
