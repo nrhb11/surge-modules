@@ -1,17 +1,17 @@
 #!name = Bilibili 网页版去广告
-#!desc = 清理 Bilibili 网页首页、搜索页与视频页广告；可选隐藏首页轮播图和直播首页推广播放器。不处理 Bilibili App。
+#!desc = 清理 Bilibili 网页首页、搜索页与视频页广告，隐藏首页轮播拦截提示和直播卡片；可选隐藏整个轮播图及直播首页推广播放器。
 #!author = nrhb11
 #!category = Streaming
-#!version = 1.0.0
-#!arguments = hideCarousel:false,hideLivePromo:false
-#!arguments-desc = hideCarousel：隐藏首页整个轮播图；hideLivePromo：隐藏直播首页顶部推广播放器。
+#!version = 1.0.1
+#!arguments = hideHomeLive:true,hideCarousel:false,hideLivePromo:false
+#!arguments-desc = hideHomeLive：隐藏首页直播卡片；hideCarousel：隐藏首页整个轮播图；hideLivePromo：隐藏直播首页顶部推广播放器。
 
 [Script]
-bilibili.web.home = type=http-response, pattern=^https:\/\/www\.bilibili\.com\/(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js, argument="{\"hideCarousel\":{{{hideCarousel}}},\"hideLivePromo\":{{{hideLivePromo}}}}"
-bilibili.web.video = type=http-response, pattern=^https:\/\/www\.bilibili\.com\/video\/(?:BV|av)[^/?]+\/?(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js, argument="{\"hideCarousel\":{{{hideCarousel}}},\"hideLivePromo\":{{{hideLivePromo}}}}"
-bilibili.web.search = type=http-response, pattern=^https:\/\/search\.bilibili\.com\/(?:all|video)(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js, argument="{\"hideCarousel\":{{{hideCarousel}}},\"hideLivePromo\":{{{hideLivePromo}}}}"
-bilibili.web.live = type=http-response, pattern=^https:\/\/live\.bilibili\.com\/(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js, argument="{\"hideCarousel\":{{{hideCarousel}}},\"hideLivePromo\":{{{hideLivePromo}}}}"
-bilibili.web.feed = type=http-response, pattern=^https:\/\/api\.bilibili\.com\/x\/web-interface\/wbi\/index\/top\/feed\/rcmd(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js
+bilibili.web.home = type=http-response, pattern=^https:\/\/www\.bilibili\.com\/(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js?v=20260926.1, argument="{\"hideHomeLive\":{{{hideHomeLive}}},\"hideCarousel\":{{{hideCarousel}}},\"hideLivePromo\":{{{hideLivePromo}}}}"
+bilibili.web.video = type=http-response, pattern=^https:\/\/www\.bilibili\.com\/video\/(?:BV|av)[^/?]+\/?(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js?v=20260926.1, argument="{\"hideHomeLive\":{{{hideHomeLive}}},\"hideCarousel\":{{{hideCarousel}}},\"hideLivePromo\":{{{hideLivePromo}}}}"
+bilibili.web.search = type=http-response, pattern=^https:\/\/search\.bilibili\.com\/(?:all|video)(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js?v=20260926.1, argument="{\"hideHomeLive\":{{{hideHomeLive}}},\"hideCarousel\":{{{hideCarousel}}},\"hideLivePromo\":{{{hideLivePromo}}}}"
+bilibili.web.live = type=http-response, pattern=^https:\/\/live\.bilibili\.com\/(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js?v=20260926.1, argument="{\"hideHomeLive\":{{{hideHomeLive}}},\"hideCarousel\":{{{hideCarousel}}},\"hideLivePromo\":{{{hideLivePromo}}}}"
+bilibili.web.feed = type=http-response, pattern=^https:\/\/api\.bilibili\.com\/x\/web-interface\/wbi\/index\/top\/feed\/rcmd(?:\?.*)?$, requires-body=true, max-size=5242880, script-path=https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bilibili-web/scripts/bilibili-web-response.js?v=20260926.1
 
 [MITM]
 hostname = %APPEND% www.bilibili.com, search.bilibili.com, live.bilibili.com, api.bilibili.com

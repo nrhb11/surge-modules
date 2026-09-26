@@ -66,6 +66,8 @@
     '#right-bottom-banner', '.right-bottom-banner.ad-report'
   ];
   const home = [
+    // Bilibili inserts this warning into every carousel slide, including real videos.
+    '.carousel-container .extension-tips-v2',
     '.feed-card:has(a[href*="cm.bilibili.com/cm/api/"])',
     '.floor-single-card:has(a[href*="cm.bilibili.com/cm/api/"])',
     '.carousel-area:has(a[href*="cm.bilibili.com/cm/api/"])',
@@ -83,6 +85,10 @@
   let selectors = [];
   if (/^https:\/\/www\.bilibili\.com\/(?:\?|$)/.test(url)) {
     selectors = common.concat(home);
+    if (options.hideHomeLive !== false) {
+      selectors.push('.floor-single-card:has(a[href*="live.bilibili.com/"])');
+      selectors.push('.feed-card:has(.bili-live-card)');
+    }
     if (options.hideCarousel === true) {
       selectors.push('.recommended-container_floor-aside .recommended-swipe');
     }

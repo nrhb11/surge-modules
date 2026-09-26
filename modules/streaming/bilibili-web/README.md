@@ -16,7 +16,7 @@ https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bi
 
 | 位置 | 默认处理 |
 | --- | --- |
-| 首页推荐流 | 过滤推荐接口中带有明确广告标记的项目；隐藏指向 `cm.bilibili.com/cm/api/` 的广告卡片及轮播广告项 |
+| 首页推荐流 | 过滤推荐接口中带有明确广告标记的项目；隐藏指向 `cm.bilibili.com/cm/api/` 的广告卡片及轮播广告项；隐藏轮播图中的“被 AdGuard/AdBlock 类插件屏蔽”提示和直播卡片 |
 | 搜索结果 | 隐藏指向上述广告跳转接口的结果卡片 |
 | 视频页 | 隐藏已核对的侧栏、浮层和横幅广告容器 |
 | 直播首页 | 隐藏明确标为广告的横幅；顶部推广播放器可选隐藏 |
@@ -27,6 +27,7 @@ https://raw.githubusercontent.com/nrhb11/surge-modules/main/modules/streaming/bi
 
 | 参数 | 默认值 | 效果 |
 | --- | --- | --- |
+| `hideHomeLive` | `true` | 隐藏首页推荐区域中的直播卡片；设为 `false` 可恢复 |
 | `hideCarousel` | `false` | 隐藏首页整个轮播图，包括非广告内容 |
 | `hideLivePromo` | `false` | 隐藏直播首页顶部推广播放器 |
 

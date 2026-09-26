@@ -22,6 +22,9 @@ const markup = '<!doctype html><html><head><title>Bilibili</title></head><body>è
 const homeResult = run(home, 'text/html; charset=utf-8', markup);
 assert.match(homeResult.body, /data-surge-bilibili-web-adblock/);
 assert.match(homeResult.body, /\.feed-card:has\(a\[href\*="cm\.bilibili\.com\/cm\/api\/"\]\)/);
+assert.match(homeResult.body, /\.carousel-container \.extension-tips-v2/);
+assert.match(homeResult.body, /\.floor-single-card:has\(a\[href\*="live\.bilibili\.com\/"\]\)/);
+assert.ok(!run(home, 'text/html', markup, '{"hideHomeLive":false}').body.includes('.floor-single-card:has(a[href*="live.bilibili.com/"])'));
 assert.ok(!homeResult.body.includes('.recommended-container_floor-aside .recommended-swipe'));
 assert.match(run(home, 'text/html', markup, '{"hideCarousel":true}').body, /recommended-swipe/);
 assert.equal(Object.keys(run(home, 'application/json', '{}')).length, 0);
