@@ -35,8 +35,8 @@ const api = run(
 );
 const apiBody = JSON.parse(api.body);
 assert.equal('adSlots' in apiBody, false);
-assert.equal(apiBody.contents.length, 1);
-assert.equal(apiBody.contents[0].richItemRenderer.content.videoRenderer.videoId, 'ok');
+assert.equal(apiBody.contents.length, 2);
+assert.equal(apiBody.contents[1].richItemRenderer.content.videoRenderer.videoId, 'ok');
 
 const musicApi = run(
   'https://music.youtube.com/youtubei/v1/player',
@@ -48,7 +48,7 @@ const musicApi = run(
 );
 const musicApiBody = JSON.parse(musicApi.body);
 assert.equal('playerAds' in musicApiBody, false);
-assert.equal('musicPremiumUpsellRenderer' in musicApiBody.overlay, false);
+assert.equal('musicPremiumUpsellRenderer' in musicApiBody.overlay, true);
 assert.equal(musicApiBody.videoDetails.videoId, 'music-ok');
 
 const page = run(

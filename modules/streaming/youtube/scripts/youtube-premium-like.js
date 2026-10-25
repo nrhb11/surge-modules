@@ -35,20 +35,19 @@ const SHELL_RENDERERS = new Set([
   'richItemRenderer', 'richSectionRenderer', 'itemSectionRenderer'
 ]);
 
-function hasRenderableLeaf(node, seen = new WeakSet(), depth = 0) {
+// Only prune provably empty shell-only trees after ad fields are removed.
+// Unknown content, playback fields and metadata are conservatively preserved.
+function isEmptyShellTree(node, seen = new WeakSet(), depth = 0) {
   if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return false;
   seen.add(node);
-  for (const key of Object.keys(node)) {
-    if ((key.endsWith('Renderer') || key.endsWith('ViewModel')) && !SHELL_RENDERERS.has(key)) return true;
-    if (hasRenderableLeaf(node[key], seen, depth + 1)) return true;
-  }
-  return false;
+  if (Array.isArray(node)) return node.every(item => isEmptyShellTree(item, seen, depth + 1));
+  const keys = Object.keys(node);
+  return keys.length === 0 || keys.every(key => SHELL_RENDERERS.has(key) && isEmptyShellTree(node[key], seen, depth + 1));
 }
-
 function isVacantRendererShell(node) {
   if (!node || typeof node !== 'object' || Array.isArray(node)) return false;
-  if (!Object.keys(node).some((key) => SHELL_RENDERERS.has(key))) return false;
-  return !hasRenderableLeaf(node);
+  const keys = Object.keys(node);
+  return keys.length > 0 && keys.every(key => SHELL_RENDERERS.has(key)) && isEmptyShellTree(node);
 }
 
 function clean(node, isMusic = false, seen = new WeakSet(), depth = 0) {
@@ -62,7 +61,7 @@ function clean(node, isMusic = false, seen = new WeakSet(), depth = 0) {
       const item = node[i];
       if (!item || typeof item !== 'object') continue;
       const keys = Object.keys(item);
-      const isAd = keys.some((key) => removeKeys.has(key));
+      const isAd = keys.length > 0 && keys.every((key) => removeKeys.has(key));
       const isShorts = !isMusic && HIDE_SHORTS && keys.some((key) => SHORTS_KEYS.has(key));
       if (isAd || isShorts) {
         node.splice(i, 1);
