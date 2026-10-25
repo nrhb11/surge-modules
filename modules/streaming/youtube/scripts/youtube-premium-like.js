@@ -35,37 +35,25 @@ const SHELL_RENDERERS = new Set([
   'richItemRenderer', 'richSectionRenderer', 'itemSectionRenderer'
 ]);
 
-// Only prune provably empty shell-only trees after ad fields are removed.
-// Unknown content, playback fields and metadata are conservatively preserved.
-function isEmptyShellTree(node, seen = new WeakSet(), depth = 0) {
+function hasRenderableLeaf(node, seen = new WeakSet(), depth = 0) {
   if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return false;
   seen.add(node);
-  if (Array.isArray(node)) return node.every(item => isEmptyShellTree(item, seen, depth + 1));
-  const keys = Object.keys(node);
-  return keys.length === 0 || keys.every(key => SHELL_RENDERERS.has(key) && isEmptyShellTree(node[key], seen, depth + 1));
-}
-function isVacantRendererShell(node) {
-  if (!node || typeof node !== 'object' || Array.isArray(node)) return false;
-  const keys = Object.keys(node);
-  return keys.length > 0 && keys.every(key => SHELL_RENDERERS.has(key)) && isEmptyShellTree(node);
+  for (const key of Object.keys(node)) {
+    if ((key.endsWith('Renderer') || key.endsWith('ViewModel')) && !SHELL_RENDERERS.has(key)) return true;
+    if (hasRenderableLeaf(node[key], seen, depth + 1)) return true;
+  }
+  return false;
 }
 
-// Prune only residues proven to come from removed ad fields.
-// Unknown data and all nonempty content remain intact.
-const AD_RESIDUE_META = new Set(['trackingParams', 'clickTrackingParams', 'loggingDirectives']);
-const AD_RESIDUE_WRAPPERS = new Set([...SHELL_RENDERERS, 'content', 'contents', 'items']);
-function isEmptyAdResidue(node, seen = new WeakSet(), depth = 0) {
-  if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return false;
-  seen.add(node);
-  if (Array.isArray(node)) return node.every(item => isEmptyAdResidue(item, seen, depth + 1));
-  return Object.keys(node).every(key => AD_RESIDUE_META.has(key) ||
-    (AD_RESIDUE_WRAPPERS.has(key) && isEmptyAdResidue(node[key], seen, depth + 1)));
+function isVacantRendererShell(node) {
+  if (!node || typeof node !== 'object' || Array.isArray(node)) return false;
+  if (!Object.keys(node).some((key) => SHELL_RENDERERS.has(key))) return false;
+  return !hasRenderableLeaf(node);
 }
 
 function clean(node, isMusic = false, seen = new WeakSet(), depth = 0) {
-  if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return false;
+  if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return;
   seen.add(node);
-  let removedAd = false;
 
   const removeKeys = isMusic ? MUSIC_REMOVE_KEYS : REMOVE_KEYS;
 
@@ -74,37 +62,32 @@ function clean(node, isMusic = false, seen = new WeakSet(), depth = 0) {
       const item = node[i];
       if (!item || typeof item !== 'object') continue;
       const keys = Object.keys(item);
-      const isAd = keys.length > 0 && keys.every((key) => removeKeys.has(key));
+      const isAd = keys.some((key) => removeKeys.has(key));
       const isShorts = !isMusic && HIDE_SHORTS && keys.some((key) => SHORTS_KEYS.has(key));
       if (isAd || isShorts) {
         node.splice(i, 1);
-        removedAd = removedAd || isAd;
       } else {
-        const childHadAd = clean(item, isMusic, seen, depth + 1);
-        removedAd = removedAd || childHadAd;
-        if (!isMusic && (isVacantRendererShell(item) || (childHadAd && isEmptyAdResidue(item)))) {
+        clean(item, isMusic, seen, depth + 1);
+        if (!isMusic && isVacantRendererShell(item)) {
           node.splice(i, 1);
         }
       }
     }
-    return removedAd;
+    return;
   }
 
   for (const key of Object.keys(node)) {
     if (removeKeys.has(key) || (!isMusic && HIDE_SHORTS && SHORTS_KEYS.has(key))) {
       delete node[key];
-      removedAd = removedAd || removeKeys.has(key);
     } else {
-      removedAd = clean(node[key], isMusic, seen, depth + 1) || removedAd;
+      clean(node[key], isMusic, seen, depth + 1);
     }
   }
 
   if (node.playerConfig && typeof node.playerConfig === 'object') {
-    removedAd = ('adPlacementConfig' in node.playerConfig) || ('adSignalsConfig' in node.playerConfig) || removedAd;
     delete node.playerConfig.adPlacementConfig;
     delete node.playerConfig.adSignalsConfig;
   }
-  return removedAd;
 }
 
 (function main() {

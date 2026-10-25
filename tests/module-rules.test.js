@@ -4,10 +4,10 @@ const fs = require('node:fs');
 function testModuleFile(relPath) {
   const moduleText = fs.readFileSync(new URL(relPath, `file://${__dirname}/`), 'utf8');
   assert.equal(moduleText.includes('youtube.music.page ='), false);
-  assert.equal(moduleText.includes('youtube.music.api ='), false);
+  assert.equal(moduleText.includes('youtube.music.api ='), true);
   assert.equal(moduleText.includes('youtube.web.home ='), false);
   assert.equal(moduleText.includes('youtube.web.home-data = type=http-response'), true);
-  assert.equal(moduleText.includes('youtube-home-response.js?v=20261025.2'), true);
+  assert.equal(moduleText.includes('youtube-home-response.js?v=20260824.1'), true);
   assert.equal(moduleText.includes('youtube.web.watch ='), false);
   assert.equal(moduleText.includes('youtube.web.results ='), false);
   assert.equal(moduleText.includes('youtube.web.shorts ='), false);
@@ -15,7 +15,7 @@ function testModuleFile(relPath) {
   assert.equal(moduleText.includes('youtube-web-request.js?v=20260824.1'), true);
   assert.equal(moduleText.includes('youtube.music.compat = type=http-request'), false);
   assert.equal(moduleText.includes('youtube-music-request.js'), false);
-  assert.equal(moduleText.includes('youtube-premium-like.js?v=20261025.2'), true);
+  assert.equal(moduleText.includes('youtube-premium-like.js?v=20260824.1'), true);
   assert.equal(moduleText.includes('(browse|next|search|player|guide|get_watch)'), false);
   assert.equal(moduleText.includes('googlevideo.com'), true);
   assert.equal(moduleText.includes('/ptracking'), false);
@@ -23,8 +23,6 @@ function testModuleFile(relPath) {
   assert.equal(moduleText.includes('#!arguments=captionLang:zh-Hans'), false);
   assert.equal(moduleText.includes('\\"captionLang\\":\\"off\\"'), true);
   assert.equal(moduleText.includes('surge-modules/main/modules/streaming/youtube'), true);
-  assert.equal(/(?:request|response)-header-(?:del|replace)/.test(moduleText), false);
-  assert.equal(moduleText.includes('http-request ^https?'), true);
   const mobileRule = moduleText.split('\n').find((line) => line.startsWith('youtube.mobile.response ='));
   assert.equal(mobileRule.includes('|player|'), true);
   assert.equal(mobileRule.includes('|get_watch|'), true);

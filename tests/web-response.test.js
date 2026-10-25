@@ -48,7 +48,7 @@ const musicApi = run(
 );
 const musicApiBody = JSON.parse(musicApi.body);
 assert.equal('playerAds' in musicApiBody, false);
-assert.equal('musicPremiumUpsellRenderer' in musicApiBody.overlay, true);
+assert.equal('musicPremiumUpsellRenderer' in musicApiBody.overlay, false);
 assert.equal(musicApiBody.videoDetails.videoId, 'music-ok');
 
 const page = run(
