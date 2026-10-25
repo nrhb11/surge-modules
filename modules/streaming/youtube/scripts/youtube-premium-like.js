@@ -50,9 +50,22 @@ function isVacantRendererShell(node) {
   return keys.length > 0 && keys.every(key => SHELL_RENDERERS.has(key)) && isEmptyShellTree(node);
 }
 
-function clean(node, isMusic = false, seen = new WeakSet(), depth = 0) {
-  if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return;
+// Prune only residues proven to come from removed ad fields.
+// Unknown data and all nonempty content remain intact.
+const AD_RESIDUE_META = new Set(['trackingParams', 'clickTrackingParams', 'loggingDirectives']);
+const AD_RESIDUE_WRAPPERS = new Set([...SHELL_RENDERERS, 'content', 'contents', 'items']);
+function isEmptyAdResidue(node, seen = new WeakSet(), depth = 0) {
+  if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return false;
   seen.add(node);
+  if (Array.isArray(node)) return node.every(item => isEmptyAdResidue(item, seen, depth + 1));
+  return Object.keys(node).every(key => AD_RESIDUE_META.has(key) ||
+    (AD_RESIDUE_WRAPPERS.has(key) && isEmptyAdResidue(node[key], seen, depth + 1)));
+}
+
+function clean(node, isMusic = false, seen = new WeakSet(), depth = 0) {
+  if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return false;
+  seen.add(node);
+  let removedAd = false;
 
   const removeKeys = isMusic ? MUSIC_REMOVE_KEYS : REMOVE_KEYS;
 
@@ -65,28 +78,33 @@ function clean(node, isMusic = false, seen = new WeakSet(), depth = 0) {
       const isShorts = !isMusic && HIDE_SHORTS && keys.some((key) => SHORTS_KEYS.has(key));
       if (isAd || isShorts) {
         node.splice(i, 1);
+        removedAd = removedAd || isAd;
       } else {
-        clean(item, isMusic, seen, depth + 1);
-        if (!isMusic && isVacantRendererShell(item)) {
+        const childHadAd = clean(item, isMusic, seen, depth + 1);
+        removedAd = removedAd || childHadAd;
+        if (!isMusic && (isVacantRendererShell(item) || (childHadAd && isEmptyAdResidue(item)))) {
           node.splice(i, 1);
         }
       }
     }
-    return;
+    return removedAd;
   }
 
   for (const key of Object.keys(node)) {
     if (removeKeys.has(key) || (!isMusic && HIDE_SHORTS && SHORTS_KEYS.has(key))) {
       delete node[key];
+      removedAd = removedAd || removeKeys.has(key);
     } else {
-      clean(node[key], isMusic, seen, depth + 1);
+      removedAd = clean(node[key], isMusic, seen, depth + 1) || removedAd;
     }
   }
 
   if (node.playerConfig && typeof node.playerConfig === 'object') {
+    removedAd = ('adPlacementConfig' in node.playerConfig) || ('adSignalsConfig' in node.playerConfig) || removedAd;
     delete node.playerConfig.adPlacementConfig;
     delete node.playerConfig.adSignalsConfig;
   }
+  return removedAd;
 }
 
 (function main() {

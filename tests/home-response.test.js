@@ -26,7 +26,7 @@ const result = run(html, {
 
 assert.equal(result.body.includes('adSlotRenderer'), false);
 assert.equal(result.body.includes('"videoId":"ok"'), true);
-assert.equal(result.body.includes('ad-shell'), true);
+assert.equal(result.body.includes('ad-shell'), false);
 assert.equal(result.body.includes('nonce="keep"'), true);
 assert.equal(result.headers['Content-Security-Policy'], "script-src 'nonce-keep'");
 assert.equal(result.headers['Content-Security-Policy-Report-Only'], 'default-src self');

@@ -40,7 +40,19 @@ function isVacantRendererShell(node) {
   return keys.length > 0 && keys.every(key => SHELL_RENDERERS.has(key)) && isEmptyShellTree(node);
 }
 
-function clean(node, seen = new WeakSet(), depth = 0) {
+// Prune only residues proven to come from removed ad fields.
+// Unknown data and all nonempty content remain intact.
+const AD_RESIDUE_META = new Set(['trackingParams', 'clickTrackingParams', 'loggingDirectives']);
+const AD_RESIDUE_WRAPPERS = new Set([...SHELL_RENDERERS, 'content', 'contents', 'items']);
+function isEmptyAdResidue(node, seen = new WeakSet(), depth = 0) {
+  if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return false;
+  seen.add(node);
+  if (Array.isArray(node)) return node.every(item => isEmptyAdResidue(item, seen, depth + 1));
+  return Object.keys(node).every(key => AD_RESIDUE_META.has(key) ||
+    (AD_RESIDUE_WRAPPERS.has(key) && isEmptyAdResidue(node[key], seen, depth + 1)));
+}
+
+function clean(node, seen = new WeakSet(), depth = 0, adChanges = { count: 0 }) {
   if (!node || typeof node !== 'object' || depth > 40 || seen.has(node)) return 0;
   seen.add(node);
   let removed = 0;
@@ -50,13 +62,18 @@ function clean(node, seen = new WeakSet(), depth = 0) {
       const item = node[i];
       if (!item || typeof item !== 'object') continue;
       const keys = Object.keys(item);
-      if (keys.length > 0 && keys.every((key) => REMOVE_KEYS.has(key)) ||
-          (HIDE_SHORTS && keys.some((key) => SHORTS_KEYS.has(key)))) {
+      const isAd = keys.length > 0 && keys.every((key) => REMOVE_KEYS.has(key));
+      const isShorts = HIDE_SHORTS && keys.some((key) => SHORTS_KEYS.has(key));
+      if (isAd || isShorts) {
         node.splice(i, 1);
         removed++;
+        if (isAd) adChanges.count++;
       } else {
-        removed += clean(item, seen, depth + 1);
-        if (isVacantRendererShell(item)) {
+        const adsBefore = adChanges.count;
+        const childRemoved = clean(item, seen, depth + 1, adChanges);
+        const childHadAd = adChanges.count > adsBefore;
+        removed += childRemoved;
+        if (isVacantRendererShell(item) || (childHadAd && isEmptyAdResidue(item))) {
           node.splice(i, 1);
           removed++;
         }
@@ -69,8 +86,9 @@ function clean(node, seen = new WeakSet(), depth = 0) {
     if (REMOVE_KEYS.has(key) || (HIDE_SHORTS && SHORTS_KEYS.has(key))) {
       delete node[key];
       removed++;
+      if (REMOVE_KEYS.has(key)) adChanges.count++;
     } else {
-      removed += clean(node[key], seen, depth + 1);
+      removed += clean(node[key], seen, depth + 1, adChanges);
     }
   }
   return removed;

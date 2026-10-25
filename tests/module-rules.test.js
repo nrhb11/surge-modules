@@ -7,7 +7,7 @@ function testModuleFile(relPath) {
   assert.equal(moduleText.includes('youtube.music.api ='), false);
   assert.equal(moduleText.includes('youtube.web.home ='), false);
   assert.equal(moduleText.includes('youtube.web.home-data = type=http-response'), true);
-  assert.equal(moduleText.includes('youtube-home-response.js?v=20261025.1'), true);
+  assert.equal(moduleText.includes('youtube-home-response.js?v=20261025.2'), true);
   assert.equal(moduleText.includes('youtube.web.watch ='), false);
   assert.equal(moduleText.includes('youtube.web.results ='), false);
   assert.equal(moduleText.includes('youtube.web.shorts ='), false);
@@ -15,7 +15,7 @@ function testModuleFile(relPath) {
   assert.equal(moduleText.includes('youtube-web-request.js?v=20260824.1'), true);
   assert.equal(moduleText.includes('youtube.music.compat = type=http-request'), false);
   assert.equal(moduleText.includes('youtube-music-request.js'), false);
-  assert.equal(moduleText.includes('youtube-premium-like.js?v=20261025.1'), true);
+  assert.equal(moduleText.includes('youtube-premium-like.js?v=20261025.2'), true);
   assert.equal(moduleText.includes('(browse|next|search|player|guide|get_watch)'), false);
   assert.equal(moduleText.includes('googlevideo.com'), true);
   assert.equal(moduleText.includes('/ptracking'), false);
